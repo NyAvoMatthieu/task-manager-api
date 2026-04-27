@@ -1,5 +1,8 @@
 # 🚀 Task Manager API
 
+![Node.js](https://img.shields.io/badge/Node.js-18-green)
+![Express](https://img.shields.io/badge/Express.js-black)
+
 A RESTful Task Management API built with **Node.js** and **Express**.  
 This project demonstrates a clean architecture with CRUD operations and JSON-based persistence.
 
