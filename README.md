@@ -111,4 +111,4 @@ Server will run on: `http://localhost:3000`
 
 ## 👨‍💻 Author
 
-**Your Name** — [GitHub](https://github.com/your-username)
+**NyAvoMatthieu** — [GitHub](https://github.com/NyAvoMatthieu)
