@@ -1,5 +1,8 @@
 const express = require('express');
 const app = express();
+const logger = require('./middlewares/logger');
+
+app.use(logger);
 
 app.use(express.json());
 

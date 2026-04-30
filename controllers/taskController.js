@@ -1,24 +1,37 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = './data/tasks.json';
 
-const getTasks = (req, res) => {
-    let tasks = JSON.parse(fs.readFileSync(path));
+const getTasks = async (req, res) => {
+    let tasks = JSON.parse(await fs.readFile('./data/tasks.json'));
 
-    const { status } = req.query;
+    const { status, page = 1, limit = 5 } = req.query;
 
+    // filtre
     if (status) {
         tasks = tasks.filter(t => t.status === status);
     }
 
-    res.json(tasks);
+    // pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedTasks = tasks.slice(startIndex, endIndex);
+
+    res.json({
+        total: tasks.length,
+        page: Number(page),
+        limit: Number(limit),
+        data: paginatedTasks
+    });
 };
 
-const createTask = (req, res) => {
+const createTask = async (req, res) => {
+    const tasks = JSON.parse(await fs.readFile(path));
+
     if (!req.body.title || req.body.title.trim() === "") {
         return res.status(400).json({ message: "Title is required" });
     }
 
-    const tasks = JSON.parse(fs.readFileSync(path));
     const newTask = {
         id: Date.now(),
         title: req.body.title,
@@ -26,7 +39,8 @@ const createTask = (req, res) => {
     };
 
     tasks.push(newTask);
-    fs.writeFileSync(path, JSON.stringify(tasks, null, 2));
+
+    await fs.writeFile(path, JSON.stringify(tasks, null, 2));
 
     res.status(201).json(newTask);
 };
