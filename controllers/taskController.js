@@ -2,27 +2,47 @@ const fs = require('fs').promises;
 const path = './data/tasks.json';
 
 const getTasks = async (req, res) => {
-    let tasks = JSON.parse(await fs.readFile('./data/tasks.json'));
+    try {
+        let tasks = JSON.parse(await fs.readFile('./data/tasks.json'));
 
-    const { status, page = 1, limit = 5 } = req.query;
+        const { status, page = 1, limit = 5, search, sort, order = "asc" } = req.query;
 
-    // filtre
-    if (status) {
-        tasks = tasks.filter(t => t.status === status);
+        // filtre status
+        if (status) {
+            tasks = tasks.filter(t => t.status === status);
+        }
+
+        // 🔍 recherche
+        if (search) {
+            tasks = tasks.filter(t =>
+                t.title.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        // 🔃 tri
+        if (sort) {
+            tasks.sort((a, b) => {
+                if (order === "desc") {
+                    return a[sort] < b[sort] ? 1 : -1;
+                }
+                return a[sort] > b[sort] ? 1 : -1;
+            });
+        }
+
+        // pagination
+        const startIndex = (page - 1) * limit;
+        const paginatedTasks = tasks.slice(startIndex, startIndex + Number(limit));
+
+        res.json({
+            total: tasks.length,
+            page: Number(page),
+            limit: Number(limit),
+            data: paginatedTasks
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
     }
-
-    // pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-
-    const paginatedTasks = tasks.slice(startIndex, endIndex);
-
-    res.json({
-        total: tasks.length,
-        page: Number(page),
-        limit: Number(limit),
-        data: paginatedTasks
-    });
 };
 
 const createTask = async (req, res) => {
