@@ -41,7 +41,7 @@ const getTasks = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ message: "Server error" });
+        throw new Error("Server error");
     }
 };
 
@@ -49,7 +49,8 @@ const createTask = async (req, res) => {
     const tasks = JSON.parse(await fs.readFile(path));
 
     if (!req.body.title || req.body.title.trim() === "") {
-        return res.status(400).json({ message: "Title is required" });
+        // return res.status(400).json({ message: "Title is required" });
+        throw new Error("Title is required");
     }
 
     const newTask = {
@@ -65,36 +66,35 @@ const createTask = async (req, res) => {
     res.status(201).json(newTask);
 };
 
-const updateTask = (req, res) => {
-    const tasks = JSON.parse(fs.readFileSync(path));
+const updateTask = async (req, res) => {
+    const tasks = JSON.parse(await fs.readFile(path));
     const taskId = parseInt(req.params.id);
 
     const task = tasks.find(t => t.id === taskId);
 
     if (!task) {
-        return res.status(404).json({ message: "Task not found" });
+        throw new Error("Task not found");
     }
 
-    // Mise à jour
     task.title = req.body.title || task.title;
     task.status = req.body.status || task.status;
 
-    fs.writeFileSync(path, JSON.stringify(tasks, null, 2));
+    await fs.writeFile(path, JSON.stringify(tasks, null, 2));
 
     res.json(task);
 };
 
-const deleteTask = (req, res) => {
-    let tasks = JSON.parse(fs.readFileSync(path));
+const deleteTask = async (req, res) => {
+    const tasks = JSON.parse(await fs.readFile(path));
     const taskId = parseInt(req.params.id);
 
     const newTasks = tasks.filter(t => t.id !== taskId);
 
     if (tasks.length === newTasks.length) {
-        return res.status(404).json({ message: "Task not found" });
+        throw new Error("Task not found");
     }
 
-    fs.writeFileSync(path, JSON.stringify(newTasks, null, 2));
+    await fs.writeFile(path, JSON.stringify(newTasks, null, 2));
 
     res.json({ message: "Task deleted" });
 };
